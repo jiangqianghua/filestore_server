@@ -37,3 +37,19 @@ func RemoveFileMeta(fileSha1 string) {
 func UpdateFileMetaDB(fmeta FileMeta) bool {
 	return mydb.OnFileUploadFinished(fmeta.FileSha1, fmeta.FileName, fmeta.FileSize, fmeta.Location)
 }
+
+// 从数据获取文件元信息
+func GetFileMetaDB(fileSha1 string) (FileMeta, error) {
+	tfile, err := mydb.GetFileMeta(fileSha1)
+	if err != nil {
+		return FileMeta{}, nil
+	}
+	fmeta := FileMeta{
+		FileSha1: tfile.FileHash,
+		FileName: tfile.FileName.String,
+		FileSize: tfile.FileSize.Int64,
+		Location: tfile.FileAddr.String,
+	}
+
+	return fmeta, nil
+}
