@@ -84,3 +84,30 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	// 返回json数据
 	w.Write(data)
 }
+
+// 文件下载
+func DownloadHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fsha1 := r.Form.Get("filehash")
+	fm := meta.GetFileMeta(fsha1)
+	f, err := os.Open(fm.Location)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+	// 把内容读取到内存，测试使用
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// 设置头部，让浏览器知道是下载
+	w.Header().Set("Content-type", "application/octect-stream")
+	w.Header().Set("content-disposition", "attachment;filename=\""+fm.FileName+"\"")
+	w.Write(data)
+
+}
