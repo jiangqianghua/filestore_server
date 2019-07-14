@@ -54,14 +54,14 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// 返回消息
-		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
-
 		newFile.Seek(0, 0)
 		fileMeta.FileSha1 = util.FileSha1(newFile)
 		fmt.Println("sha1:" + fileMeta.FileSha1)
 		// 把元数据添加到map里面去
-		meta.UploadateFileMate(fileMeta)
+		// meta.UploadateFileMate(fileMeta)
+		meta.UpdateFileMetaDB(fileMeta)
+		// 返回消息
+		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 
 	}
 }

@@ -1,5 +1,9 @@
 package meta
 
+import (
+	mydb "filestore_server/db"
+)
+
 type FileMeta struct {
 	FileSha1 string
 	FileName string
@@ -27,4 +31,9 @@ func GetFileMeta(fileSha1 string) FileMeta {
 // 删除元数据
 func RemoveFileMeta(fileSha1 string) {
 	delete(fileMetas, fileSha1)
+}
+
+// 新增和更新元数据到数据库中
+func UpdateFileMetaDB(fmeta FileMeta) bool {
+	return mydb.OnFileUploadFinished(fmeta.FileSha1, fmeta.FileName, fmeta.FileSize, fmeta.Location)
 }
