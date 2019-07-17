@@ -109,3 +109,30 @@ func IsTokenValid(token string) bool {
 	// TODO: 对比两个token是否一致
 	return true
 }
+
+// 获取用户信息
+func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	username := r.Form.Get("username")
+	token := r.Form.Get("token")
+
+	// 验证token
+	isValidToken := IsTokenValid(token)
+	if !isValidToken {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	// 查询用户信息
+	user, err := dblayer.GetUserInfo(username)
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+	// 组装并响应用户数据
+	resp := util.RespMsg{
+		Code: 0,
+		Msg:  "OK",
+		Data: user,
+	}
+	w.Write(resp.JSONBytes())
+}
