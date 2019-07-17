@@ -73,9 +73,23 @@ func SigninHandler(w http.ResponseWriter, r *http.Request) {
 	dblayer.UpdateToken(username, token)
 
 	// 重定向到主页
-	w.Write([]byte("http://" + r.Host + "/static/view/home.html"))
+	//w.Write([]byte("http://" + r.Host + "/static/view/home.html"))
 	// data, _ := ioutil.ReadFile("./static/view/home.html")
 	// w.Write(data)
+	resp := util.RespMsg{
+		Code: 0,
+		Msg:  "OK",
+		Data: struct {
+			Location string
+			Username string
+			Token    string
+		}{
+			Location: "http://" + r.Host + "/static/view/home.html",
+			Username: username,
+			Token:    token,
+		},
+	}
+	w.Write(resp.JSONBytes())
 }
 
 // 生成token
@@ -84,4 +98,14 @@ func GenToken(username string) string {
 	ts := fmt.Sprintf("%x", time.Now().Unix())
 	tokenPrefix := util.MD5([]byte(username + ts + "_tokensalt"))
 	return tokenPrefix + ts[:8]
+}
+
+func IsTokenValid(token string) bool {
+	if len(token) != 40 {
+		return false
+	}
+	// TODO: 判断token的时效性，是否过期
+	// TODO: 从数据库表tbl_user_token查询username对应的token信息
+	// TODO: 对比两个token是否一致
+	return true
 }
