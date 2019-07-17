@@ -114,14 +114,14 @@ func IsTokenValid(token string) bool {
 func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
-	token := r.Form.Get("token")
+	//token := r.Form.Get("token")
 
-	// 验证token
-	isValidToken := IsTokenValid(token)
-	if !isValidToken {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
+	// 验证token  走auth里面的拦截器验证
+	// isValidToken := IsTokenValid(token)
+	// if !isValidToken {
+	// 	w.WriteHeader(http.StatusForbidden)
+	// 	return
+	// }
 	// 查询用户信息
 	user, err := dblayer.GetUserInfo(username)
 	if err != nil {
