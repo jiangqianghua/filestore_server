@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	dblayer "filestore_server/db"
 	"filestore_server/meta"
 	"filestore_server/util"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -60,8 +62,19 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		// 把元数据添加到map里面去
 		// meta.UploadateFileMate(fileMeta)
 		meta.UpdateFileMetaDB(fileMeta)
+
+		// 更新用户文件记录
+		r.ParseForm()
+		username := r.Form.Get("username")
+		// 更新用户文件到数据库
+		suc := dblayer.OnUserFileUploadFinished(username, fileMeta.FileSha1, fileMeta.FileName, fileMeta.FileSize)
+		if suc {
+			http.Redirect(w, r, "/static/view/home.html", http.StatusFound)
+		} else {
+			w.Write([]byte("upload Failed"))
+		}
 		// 返回消息
-		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
+		//http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 
 	}
 }
@@ -159,4 +172,28 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fMeta.Location)
 	meta.RemoveFileMeta(fileSha1)
 	w.WriteHeader(http.StatusOK)
+}
+
+// 查询用户文件列表
+func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	limitCount, _ := strconv.Atoi(r.Form.Get("limit"))
+	username := r.Form.Get("username")
+	userFiles, err := dblayer.QueryUserFileMeta(username, limitCount)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.Marshal(userFiles)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+
 }
