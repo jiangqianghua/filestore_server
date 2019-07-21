@@ -29,6 +29,10 @@ func main() {
 	// 添加HttpInterceptor拦截器
 	http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
 
+	// 分块上传接口
+	http.HandleFunc("/file/mpupload/init", handler.HTTPInterceptor(handler.InitialMultippartUploadHandler))
+	http.HandleFunc("/file/mpupload/uppart", handler.HTTPInterceptor(handler.UploadPartHandler))
+	http.HandleFunc("/file/mpupload/complete", handler.HTTPInterceptor(handler.CompleteUploadHandler))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Printf("Failed to start server, err:%s", err.Error())
